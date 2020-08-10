@@ -1,0 +1,75 @@
+[% USE raw %]
+[% USE Asset %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha Export Plugin: Configuration</title>
+
+[% INCLUDE 'doc-head-close.inc' %]
+
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/common.css'>
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/jquery.dataTables.min.css'>
+[% Asset.css("css/humanmsg.css") | $raw %]
+
+</head>
+        
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Koha Export Plugin &rsaquo; Configuration</div>
+
+<div id="doc3">
+    <h3><i class="fa fa-list-alt"></i> Koha Export Plugin configuration</h3>
+    
+    <div id="general">
+        <form id="configureForm" method="get">
+            <input type="hidden" name="class" value="[% CLASS %]"/>
+            <input type="hidden" name="method" value="[% METHOD %]"/>
+
+            <fieldset class="rows">
+                <legend>Options</legend>
+                <ol>
+                    <li>
+                        <label for="service_url">Enable plugin: </label>
+                        <input type="checkbox" id="enabled" name="enabled" [% IF (enabled) %]checked="checked"[% END %] value="1"> Enable this plugin </input>
+                    </li>
+                    <li>
+                        <label for="store_directory">Store directory: </label>
+                        <input type="text" id="store_directory" name="store_directory" size="60" value="[% store_directory %]" />
+                    </li>
+                    <li>
+                        <label for="clean_chars">Remove this characters from the records: </label>
+                        <textarea id="clean_chars" name="clean_chars" cols="50" rows="5">[% clean_chars %]</textarea>
+                    </li>
+                </ol>
+            </fieldset>
+
+            [% IF error %]<div class="warn alert error">Error: [% error %]</div>[% END %]
+
+            <input type="hidden" name="save" value="options" />
+
+            <fieldset class="action">
+                <button id="cancel" class="btn">Cancel</button>
+                <button id="save_out" class="btn">Save</button>
+            </fieldset>
+        </form>
+    </div>
+    
+</div>
+        
+[% MACRO jsinclude BLOCK %]
+
+    [% Asset.js("lib/jquery/plugins/humanmsg.js") | $raw %]
+    [% INCLUDE 'datatables.inc' %]
+
+    <script>
+        $(document).ready(function() {
+            // General options
+            $('#cancel').on('click', function(e){
+                e.preventDefault();
+                window.location.href = '/cgi-bin/koha/plugins/plugins-home.pl';
+            });
+        });
+    </script>
+[% END %]
+        
+[% INCLUDE 'intranet-bottom.inc' %]

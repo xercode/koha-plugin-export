@@ -1,0 +1,71 @@
+#jobs-table_wrapper {
+    margin-top: 14px;
+}
+
+.jobstate-new{
+    color: blue;
+}
+
+.jobstate-started, .jobstate-inprogress {
+    color: #26caff;
+}
+
+.jobstate-error {
+    color: red;
+}
+
+.jobstate-finished {
+    color: green;
+}
+
+#messages {
+    text-align: left;
+    width: 50%;
+    border: 1px solid gray;
+    border-radius: 2px;
+    padding: 10px;
+    margin: 0 auto;
+}
+
+#messages ul > li {
+    list-style: none;
+}
+
+/* ==============================
+   Page loader
+   ============================== */
+
+.page-loader{
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: transparent;
+    z-index: 100;
+    padding: 25px;
+}
+
+.lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solid #555;
+    border-color: #555 transparent #555 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
