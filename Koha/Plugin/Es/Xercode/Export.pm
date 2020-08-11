@@ -27,6 +27,9 @@ use Pod::Usage;
 use Text::CSV::Encoded;
 use List::MoreUtils qw(uniq);
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
+use IO::Tee;
+
+our $tee = IO::Tee->new( \*STDOUT );
 
 use constant ANYONE => 2;
 
@@ -470,11 +473,10 @@ sub cronjob {
                 $systemfilename .= ".mrc";
             }
             
-            print "Starting job " . $row->{"id"} . "\n";
-            print "\t Record type: " . $row->{"record_type"} . "\n";
-            print "\t Format: " . $row->{"output_format"} . "\n";
-            print "\t Output: " . $store_directory . $systemfilename . "\n";
-            # TODO Estos print dan error con más de un elemento en bucle
+            print $tee "\nStarting job " . $row->{"id"} . "\n";
+            print $tee "\t Record type: " . $row->{"record_type"} . "\n";
+            print $tee "\t Format: " . $row->{"output_format"} . "\n";
+            print $tee "\t Output: " . $store_directory . $systemfilename . "\n";
             
             # Start
             $dbh->do("UPDATE $table_jobs SET status = ?, started_on = ? WHERE id = ?", undef, ('started', dt_from_string, $row->{"id"}));
@@ -609,7 +611,7 @@ sub cronjob {
                 
                 # Zip the file
                 my $zip = Archive::Zip->new();
-                my $file_member = $zip->addFile( $store_directory . $systemfilename );
+                my $file_member = $zip->addFile( $store_directory . $systemfilename, basename($store_directory . $systemfilename) );
                 
                 unless ( $zip->writeToFileNamed($store_directory . $systemfilename. '.zip') == AZ_OK ) {
                     print "ERROR: Zip write error\n";
