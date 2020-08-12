@@ -451,8 +451,12 @@ sub cronjob {
     my $store_directory = $self->retrieve_data('store_directory');
     $store_directory .= "/" unless ($store_directory =~ /\/$/);
 
-    my $clean_chars = $self->retrieve_data('clean_chars');
-
+    my @clean_chars;
+    if ($self->retrieve_data('clean_chars')){
+        @clean_chars = split ("\r\n", $self->retrieve_data('clean_chars'));
+    }
+    
+    
     if ( not -w $store_directory) {
         print "ERROR: The directory $store_directory not writeable.\n";
         exit;
@@ -591,7 +595,7 @@ sub cronjob {
                     my %record_ids = map { $_ => 1 } @record_ids;
                     @record_ids = grep $record_ids{$_}, @biblionumbers_list;
                 }
-
+                
                 # Do the export job
                 $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('inprogress', $row->{"id"}));
                 
@@ -604,7 +608,7 @@ sub cronjob {
                         export_items                   => (not $row->{"dont_export_item"}),
                         only_export_items_for_branches => $only_export_items_for_branches,
                         output_filepath                => $store_directory . $systemfilename,
-                        clean_chars                    => $clean_chars, # TODO Modificar Export para que quite dichos caracteres
+                        clean_chars                    => \@clean_chars,
                         exclude_suppressed_biblios     => $row->{"excludesuppressedbiblios"},
                     }
                 );
