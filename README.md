@@ -11,6 +11,7 @@ This plugin is intended to create jobs for export records in Koha
     - File::Temp
     - File::Basename
     - Archive::Zip
+    - IO::Tee
 
 # Installation
 
@@ -97,6 +98,9 @@ INSERT INTO `letter` (`module`, `code`, `branchcode`, `name`, `is_html`, `title`
 ('backgroundjobs', 'EXPORTPLUGIN', '', 'Export plugin', '1', 'Export finished', '<p>Hello [borrowers.firstname],</p>\r\n<p>your export job is finished. Please visit Koha to download it.</p>\r\n<p>Thank you</p>', 'email', 'default');
 ```
 
+Add a new cron job:
+
+perl plugin_dir/Koha/Plugin/Es/Xercode/Export/cronjob.pl
 
 # Configuration
 
