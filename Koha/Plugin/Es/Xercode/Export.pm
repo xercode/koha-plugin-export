@@ -28,6 +28,7 @@ use Text::CSV::Encoded;
 use List::MoreUtils qw(uniq);
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use IO::Tee;
+use JSON;
 
 our $tee = IO::Tee->new( \*STDOUT );
 
@@ -297,6 +298,27 @@ sub uninstall() {
 #                                          #
 #              PLUGIN METHODS              #
 ############################################
+
+sub status {
+    my ($self, $args) = @_;
+    my $cgi = $self->{'cgi'};
+    
+    my $status = ($self->retrieve_data('enabled'))?1:0;
+
+    my $store_directory = $self->retrieve_data('store_directory');
+    $store_directory =~ s/^\s+|\s+$//g;
+    
+    if ($store_directory eq ""){
+        $status = 0;
+    }else{
+        if ( not -w $store_directory) {
+            $status = 0;
+        }
+    }
+    
+    print $cgi->header( -type => 'application/json', -charset => 'utf-8' );
+    print to_json({'status' => \$status});
+}
 
 sub createjob {
     my ($self, $args) = @_;
