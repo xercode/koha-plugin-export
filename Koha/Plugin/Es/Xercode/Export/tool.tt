@@ -91,7 +91,7 @@
                                 [% IF job.status == "finished" %]
                                     <i class="fa fa-check success"></i> The job [% IF job.mailto %]has been sent to "[% job.mailto %]".[% ELSE %]is finished.[% END %] <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=download" target="_blank">Click here to download it in [% job.output_format %] format (with zip compression)</a>
                                 [% ELSIF job.status == "error" %]
-                                    <i class="fa fa-check error"></i> The job got these error: "[% messages.error %]"
+                                    <i class="fa fa-check error"></i> The job got these error: "[% job.information %]"
                                 [% ELSIF job.status == "cancelled" %]
                                     <i class="fa fa-warning warn"></i>The job has been cancelled.
                                 [% ELSIF job.status == "new" %]

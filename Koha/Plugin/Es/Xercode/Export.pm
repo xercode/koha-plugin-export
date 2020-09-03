@@ -109,12 +109,22 @@ sub tool {
         my $sth = $dbh->prepare("SELECT * FROM $table_jobs WHERE id = ?");
         $sth->execute($jobid);
         my $row = $sth->fetchrow_hashref;
+
+        my $table_log = $self->get_qualified_table_name('log');
         
         if ($row){
             if ($op eq "cancel"){
                 if (C4::Context->IsSuperLibrarian() || ($row->{borrowernumber} == $userid)){
                     if ($row->{"status"} eq "new"){
                         $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('cancelled', $jobid));
+
+                        $dbh->do(
+                            qq{
+                                INSERT INTO $table_log (`borrowernumber`, `job_id`, `action` ) VALUES ( ?, ?, ? );
+                            }
+                            , undef, ( $userid, $jobid, 'cancel' )
+                        );
+                        
                         print $cgi->redirect("/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool");
                     }
                 }
@@ -123,6 +133,14 @@ sub tool {
                 if (C4::Context->IsSuperLibrarian() || ($row->{borrowernumber} == $userid)){
                     if ($row->{"status"} eq "cancelled"){
                         $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('new', $jobid));
+
+                        $dbh->do(
+                            qq{
+                                INSERT INTO $table_log (`borrowernumber`, `job_id`, `action` ) VALUES ( ?, ?, ? );
+                            }
+                            , undef, ( $userid, $jobid, 'resume' )
+                        );
+                        
                         print $cgi->redirect("/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool");
                     }
                 }
@@ -135,6 +153,14 @@ sub tool {
                             unlink $store_directory.$row->{"systemfilename"};
                         }
                         my $sth = $dbh->prepare("DELETE FROM $table_jobs WHERE ID = ?");
+
+                        $dbh->do(
+                            qq{
+                                INSERT INTO $table_log (`borrowernumber`, `job_id`, `action`, `information` ) VALUES ( ?, ?, ?, ? );
+                            }
+                            , undef, ( $userid, $jobid, 'remove', to_json($row) )
+                        );
+                        
                         $sth->execute($jobid);
                     }
                 }
@@ -238,6 +264,7 @@ sub install() {
               `date_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
               `job_id` tinyint(4) NOT NULL,
               `action` varchar(10),
+              `information` text DEFAULT NULL,
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         }
@@ -274,6 +301,7 @@ sub install() {
 			  `filename` varchar(50),
 			  `systemfilename` varchar(50),
 			  `status` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+			  `information` text DEFAULT NULL,
               `enqueued_on` datetime DEFAULT NULL,
               `started_on` datetime DEFAULT NULL,
               `ended_on` datetime DEFAULT NULL,
@@ -618,36 +646,40 @@ sub cronjob {
                     @record_ids = grep $record_ids{$_}, @biblionumbers_list;
                 }
                 
-                # Do the export job
-                $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('inprogress', $row->{"id"}));
-                
-                Koha::Exporter::Record::export(
-                    { record_type                      => $row->{"record_type"},
-                        record_ids                     => \@record_ids,
-                        format                         => $row->{"output_format"},
-                        dont_export_fields             => $row->{"export_remove_fields"},
-                        csv_profile_id                 => $row->{"csv_profile_id"},
-                        export_items                   => (not $row->{"dont_export_item"}),
-                        only_export_items_for_branches => $only_export_items_for_branches,
-                        output_filepath                => $store_directory . $systemfilename,
-                        clean_chars                    => \@clean_chars,
-                        exclude_suppressed_biblios     => $row->{"excludesuppressedbiblios"},
+                if (@record_ids && scalar(@record_ids)){
+                    # Do the export job
+                    $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('inprogress', $row->{"id"}));
+
+                    Koha::Exporter::Record::export(
+                        { record_type                      => $row->{"record_type"},
+                            record_ids                     => \@record_ids,
+                            format                         => $row->{"output_format"},
+                            dont_export_fields             => $row->{"export_remove_fields"},
+                            csv_profile_id                 => $row->{"csv_profile_id"},
+                            export_items                   => (not $row->{"dont_export_item"}),
+                            only_export_items_for_branches => $only_export_items_for_branches,
+                            output_filepath                => $store_directory . $systemfilename,
+                            clean_chars                    => \@clean_chars,
+                            exclude_suppressed_biblios     => $row->{"excludesuppressedbiblios"},
+                        }
+                    );
+
+                    # Zip the file
+                    my $zip = Archive::Zip->new();
+                    my $file_member = $zip->addFile( $store_directory . $systemfilename, basename($store_directory . $systemfilename) );
+
+                    unless ( $zip->writeToFileNamed($store_directory . $systemfilename. '.zip') == AZ_OK ) {
+                        print "ERROR: Zip write error\n";
+                    }else{
+                        unlink $store_directory . $systemfilename || warn "ERROR: Cannot remove " . $store_directory . $systemfilename . "\n";
                     }
-                );
-                
-                # Zip the file
-                my $zip = Archive::Zip->new();
-                my $file_member = $zip->addFile( $store_directory . $systemfilename, basename($store_directory . $systemfilename) );
-                
-                unless ( $zip->writeToFileNamed($store_directory . $systemfilename. '.zip') == AZ_OK ) {
-                    print "ERROR: Zip write error\n";
+
+                    # Finish
+                    $dbh->do("UPDATE $table_jobs SET status = ?, ended_on = ? WHERE id = ?", undef, ('finished', dt_from_string, $row->{"id"}));
+                    $dbh->do("UPDATE $table_jobs SET systemfilename = ? WHERE id = ?", undef, ($systemfilename . ".zip", $row->{"id"}));
                 }else{
-                    unlink $store_directory . $systemfilename || warn "ERROR: Cannot remove " . $store_directory . $systemfilename . "\n";
+                    $dbh->do("UPDATE $table_jobs SET status = ?, information = ?, ended_on = ? WHERE id = ?", undef, ('error', 'No data to export', dt_from_string, $row->{"id"}));
                 }
-                
-                # Finish
-                $dbh->do("UPDATE $table_jobs SET status = ?, ended_on = ? WHERE id = ?", undef, ('finished', dt_from_string, $row->{"id"}));
-                $dbh->do("UPDATE $table_jobs SET systemfilename = ? WHERE id = ?", undef, ($systemfilename . ".zip", $row->{"id"}));
 
                 if ($row->{"mailto"}){
                     my $from    = C4::Context->preference('KohaAdminEmailAddress');
