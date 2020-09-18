@@ -152,6 +152,9 @@ sub tool {
                         if (-e $store_directory.$row->{"systemfilename"}){
                             unlink $store_directory.$row->{"systemfilename"};
                         }
+                        if (-e $store_directory.$row->{"systemfilename_codification"}){
+                            unlink $store_directory.$row->{"systemfilename_codification"};
+                        }
                         my $sth = $dbh->prepare("DELETE FROM $table_jobs WHERE ID = ?");
 
                         $dbh->do(
@@ -183,6 +186,23 @@ sub tool {
                     print $cgi->header(
                         -type => $type,
                         -attachment=> $row->{"filename"}.".zip"
+                    );
+                    print $content;
+                    exit;
+                }
+            }
+            if ($op eq "download_report"){
+                $store_directory .= "/" unless ($store_directory =~ /\/$/);
+                if (-e $store_directory.$row->{"systemfilename_codification"}){
+                    my $type = 'file/csv';
+                    my $file_fh;
+                    my $content;
+                    binmode(STDOUT);
+                    open $file_fh, '<', $store_directory.$row->{"systemfilename_codification"};
+                    $content .= $_ while <$file_fh>;
+                    print $cgi->header(
+                        -type => $type,
+                        -attachment=> $row->{"systemfilename_codification"}
                     );
                     print $content;
                     exit;
@@ -300,6 +320,7 @@ sub install() {
               `csv_profile_id` int(11) NULL,
 			  `filename` varchar(50),
 			  `systemfilename` varchar(50),
+              `systemfilename_codification` varchar(100),
 			  `status` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			  `information` text DEFAULT NULL,
               `enqueued_on` datetime DEFAULT NULL,
@@ -318,6 +339,8 @@ sub uninstall() {
 
     my $table_log = $self->get_qualified_table_name('log');
     C4::Context->dbh->do("DROP TABLE $table_log");
+    my $table_jobs = $self->get_qualified_table_name('jobs');
+    C4::Context->dbh->do("DROP TABLE $table_jobs");
     
     return 1;
 }
@@ -650,6 +673,8 @@ sub cronjob {
                     # Do the export job
                     $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('inprogress', $row->{"id"}));
 
+                    my $systemfilename_codification = "export-".$row->{id}."_".$today_iso."_".time().'_codification_changed.csv';
+
                     Koha::Exporter::Record::export(
                         { record_type                      => $row->{"record_type"},
                             record_ids                     => \@record_ids,
@@ -661,6 +686,7 @@ sub cronjob {
                             output_filepath                => $store_directory . $systemfilename,
                             clean_chars                    => \@clean_chars,
                             exclude_suppressed_biblios     => $row->{"excludesuppressedbiblios"},
+                            output_filepath_codification   => $store_directory . $systemfilename_codification,
                         }
                     );
 
@@ -677,6 +703,7 @@ sub cronjob {
                     # Finish
                     $dbh->do("UPDATE $table_jobs SET status = ?, ended_on = ? WHERE id = ?", undef, ('finished', dt_from_string, $row->{"id"}));
                     $dbh->do("UPDATE $table_jobs SET systemfilename = ? WHERE id = ?", undef, ($systemfilename . ".zip", $row->{"id"}));
+                    $dbh->do("UPDATE $table_jobs SET systemfilename_codification = ? WHERE id = ?", undef, ($systemfilename_codification , $row->{"id"}));
                 }else{
                     $dbh->do("UPDATE $table_jobs SET status = ?, information = ?, ended_on = ? WHERE id = ?", undef, ('error', 'No data to export', dt_from_string, $row->{"id"}));
                 }
