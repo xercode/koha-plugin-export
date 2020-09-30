@@ -604,7 +604,7 @@ sub cronjob {
 
                             ($row->{"start_datemodified"} or $row->{"end_datemodified"})
                                 ? (
-                                "me.timestamp" => {
+                                "biblio_metadatas.timestamp" => {
                                     ($row->{"start_datemodified"} ? ('>=' => $row->{"start_datemodified"}) : ()),
                                     ($row->{"end_datemodified"} ? ('<=' => $row->{"end_datemodified"}) : ()),
                                 }
@@ -639,7 +639,7 @@ sub cronjob {
 
                         };
 
-                        my $biblioitems = Koha::Biblioitems->search($conditions, { join => { 'biblio' => 'items' }, columns => 'biblionumber' });
+                        my $biblioitems = Koha::Biblioitems->search($conditions, { join => { 'biblio' => [ 'biblio_metadatas', 'items' ] }, columns => 'biblionumber' });
                         while (my $biblioitem = $biblioitems->next) {
                             push @record_ids, $biblioitem->biblionumber;
                         }
