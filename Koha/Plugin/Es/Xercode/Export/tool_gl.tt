@@ -1,0 +1,222 @@
+[% USE raw %]
+[% USE Asset %]
+[% USE KohaDates %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+<title>Koha Export Plugin</title>
+
+[% INCLUDE 'doc-head-close.inc' %]
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/common.css'>
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/jquery.dataTables.min.css'>
+
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Inicio</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl?method=tool">Plugins</a> &rsaquo; <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">Koha Export Plugin</a> &rsaquo; <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">Executar</a></div>
+
+<div id="doc3" class="tool">
+    [% IF (store_directory_notset) %]
+        <div class="dialog alert">O plugin aínda non está listo. Debe configurar o directorio de almacenamento para poder empregar o plugin.</div>
+    [% END %]
+    [% IF (store_directory_notwritable) %]
+        <div class="dialog alert">O plugin aínda non está listo. Debe ter os permisos correctos no directorio de almacenamento para poder empregar o plugin.</div>
+    [% END %]
+
+    [% IF (configok) %]
+        [% IF (enabled) %]
+            [% IF ( CAN_user_tools_export_catalog ) %]
+                <div class="dialog alert">Se dexesa crear unha tarefa de exportación, por favor vaia como de costume a Ferramentas > <a href="/cgi-bin/koha/tools/export.pl">Exportar datos</a></div>
+            [% ELSE %]
+                <div class="dialog alert">Non ten permisos para exportar datos</div>
+            [% END %]
+    
+            [% IF (jobid) %]
+                <h1>Detalles do traballo #[% job.id | html %]</h1>
+    
+                <fieldset class="rows">
+                    <ol>
+                        <li><span class="label">ID do traballo: </span>[% job.id | html %]</li>
+                        <li><span class="label">A mensaxe será enviada a: </span>[% IF (job.mailto) %][% job.mailto | html %][% ELSE %]Non hai dirección de correo electrónico[% END %]</li>
+                        <li><label for="job_status">Estado: </label>
+                            [% IF job.status == "new" %]
+                                Novo
+                            [% ELSIF job.status == "cancelled" %]
+                                Cancelado
+                            [% ELSIF job.status == "started" %]
+                                Iniciado
+                            [% ELSIF job.status == "inprogress" %]
+                                En progreso
+                            [% ELSIF job.status == "error" %]
+                                Erro
+                            [% ELSIF job.status == "finished" %]
+                                Terminado
+                            [% ELSE %]
+                                [% job.status %]
+                            [% END %]
+                        </li>
+                        <li><label for="job_type">Tipo de rexistro: </label>
+                            [% SWITCH job.record_type %]
+                                [% CASE 'bibs' %]Rexistros bibliográficos
+                                [% CASE 'auths' %]Rexistros de autoridade
+                                [% CASE %][% job.record_type | html %]
+                            [% END %]
+                        </li>
+                        <li><label for="job_starting_id">Desde ID: </label>[% IF (job.starting_id) %][% job.starting_id | html %][% ELSE %]-[% END %]</li>
+                        <li><label for="job_ending_id">Ata ID: </label>[% IF (job.ending_id) %][% job.ending_id | html %][% ELSE %]-[% END %]</li>
+                        [% IF (job.record_type == 'bibs') %]
+                            <li><label for="job_branch">Con items pertencentes ás seguintes bibliotecas: </label>[% IF (job.branch) %][% job.branch | html %][% ELSE %]All[% END %]</li>
+                            <li><label for="job_itemtype">Tipo de item: </label>[% IF (job.itemtype) %][% job.itemtype | html %][% ELSE %]All[% END %]</li>
+                            <li><label for="job_start_datecreated">Bibliográficos creados desde: </label>[% IF (job.start_datecreated) %][% job.start_datecreated | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
+                            <li><label for="job_end_datecreated">Bibliográficos creados ata: </label>[% IF (job.end_datecreated) %][% job.end_datecreated | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
+                            <li><label for="job_start_datemodified">Bibliográficos modificados desde: </label>[% IF (job.start_datemodified) %][% job.start_datemodified | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
+                            <li><label for="job_end_datemodified">Bibliográficos modificados ata: </label>[% IF (job.end_datemodified) %][% job.end_datemodified | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
+                            <li><label for="job_start_accession">Data de acceso desde: </label>[% IF (job.start_accession) %][% job.start_accession | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
+                            <li><label for="job_end_accession">Data de acceso ata: </label>[% IF (job.end_accession) %][% job.end_accession | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
+                            <li><label for="job_start_callnumber">Sinatura topográfica desde: </label>[% IF (job.start_callnumber) %][% job.start_callnumber | html %][% ELSE %]Todas[% END %]</li>
+                            <li><label for="job_end_callnumber">Sinatura topográfica ata: </label>[% IF (job.end_callnumber) %][% job.end_callnumber | html %][% ELSE %]Todas[% END %]</li>
+                            <li><label for="job_dont_export_item">Non exportar items: </label>[% IF (job.dont_export_item) %]Si[% ELSE %]Non[% END %]</li>
+                            <li><label for="job_strip_items_not_from_libraries">Eliminar items que non pertenecen as bibliotecas seleccionadas: </label>[% IF (job.strip_items_not_from_libraries) %]Si[% ELSE %]Non[% END %]</li>
+                            <li><label for="job_export_remove_fields">Non exporte campos: </label>[% IF (job.export_remove_fields) %]Si[% ELSE %]Non[% END %]</li>
+                        [% ELSE %]
+                            <li><label for="job_authtype">Tipo de autoridade: </label>[% job.authtype | html %]</li>
+                        [% END %]
+                        <li><label for="job_output_format">Formato de arquivo: </label>[% job.output_format | html %]</li>
+                        <li><label for="job_filename">Nome de arquivo: </label>[% job.filename | html %]</li>
+                        <li><label for="job_enqueued_on">Encolado en: </label>[% job.enqueued_on | $KohaDates with_hours => 1 %]</li>
+                        <li><label for="job_started_on">Iniciado en: </label>[% job.started_on | $KohaDates with_hours => 1 %]</li>
+                        <li><label for="job_ended_on">Terminado en: </label>[% job.ended_on | $KohaDates with_hours => 1 %]</li>
+                        <li><label for="job_data">Detalles: </label>
+                            <div class="dialog message">
+                                [% IF job.status == "finished" %]
+                                    <i class="fa fa-check success"></i> O traballo [% IF job.mailto %]foi enviado a "[% job.mailto %]".[% ELSE %]está terminado.[% END %] <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=download" target="_blank">Faga clic aquí para descargar en formato [% job.output_format %] (con compresión zip)</a>
+                                [% ELSIF job.status == "error" %]
+                                    <i class="fa fa-check error"></i> O traballo tivo estes erros: "[% job.information %]"
+                                [% ELSIF job.status == "cancelled" %]
+                                    <i class="fa fa-warning warn"></i>O traballo foi cancelado.
+                                [% ELSIF job.status == "new" %]
+                                    O traballo non foi iniciado.
+                                [% ELSIF job.status == "inprogress" %]
+                                    O traballo está en proceso.
+                                [% ELSIF job.status == "started" %]
+                                    O traballo foi iniciado.
+                                [% END %]
+                            </div>
+                        </li>
+                    </ol>
+                </fieldset>
+    
+                <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">Voltar ao listado de traballos</a>
+            [% ELSE %]
+                <div style="display: none;" id="div-jobs-table">
+    
+                    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&amp;method=tool" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i> Recargar datos</a>
+                    
+                    <table id="jobs-table">
+                        <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Encolado en</th>
+                            <th>Terminado en</th>
+                            <th>Tipo de rexistro</th>
+                            <th>Formato de arquivo</th>
+                            <th>Nome de arquivo</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+    
+                        <tbody>
+                            [% FOREACH job IN jobs %]
+                            <tr>
+                                <td>
+                                    [% IF job.status == "new" %]
+                                        <span class="jobstate-[% job.status %]">Novo</span>
+                                    [% ELSIF job.status == "cancelled" %]
+                                        <span class="jobstate-[% job.status %]">Cancelado</span>
+                                    [% ELSIF job.status == "started" %]
+                                        <span class="jobstate-[% job.status %]">Iniciado</span>
+                                    [% ELSIF job.status == "inprogress" %]
+                                        <span class="jobstate-[% job.status %]">En progreso</span>
+                                    [% ELSIF job.status == "error" %]
+                                        <span class="jobstate-[% job.status %]">Erro</span>
+                                    [% ELSIF job.status == "finished" %]
+                                        <span class="jobstate-[% job.status %]">Terminado</span>
+                                    [% ELSE %]
+                                        <span class="jobstate-[% job.status %]">[% job.status %]</span>
+                                    [% END %]
+                                </td>
+                                <td>[% job.enqueued_on %]</td>
+                                <td>[% job.ended_on %]</td>
+                                <td>[% IF (job.record_type) == 'bibs' %]Bibliográficos[% ELSE %]Autoridades[% END %]</td>
+                                <td>
+                                    [% IF (job.output_format) == 'xml' %]
+                                        XML
+                                    [% ELSIF (job.output_format) == 'iso2709' %]
+                                        MARC
+                                    [% ELSIF (job.output_format) == 'csv' %]
+                                        CSV
+                                    [% END %]
+                                </td>
+                                <td>[% job.filename %]</td>
+                                <td>
+                                    <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=view"><i class="fa fa-eye"></i> Ver</a>
+                                    [% IF ( CAN_user_superlibrarian || (logged_in_user.borrowernumber == job.borrowernumber) ) %]
+                                        [% IF job.status == 'new' %]
+                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=cancel"><i class="fa fa-pencil"></i> Cancelar</a>
+                                        [% END %]
+                                        [% IF job.status == 'cancelled' %]
+                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=resume"><i class="fa fa-pencil"></i> Reanudar</a>
+                                        [% END %]
+                                        [% IF job.status == 'finished' %]
+                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=download"><i class="fa fa-download"></i> Descargar</a>
+                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=download_report"><i class="fa fa-download"></i> Descargar informe</a>
+                                        [% END %]
+                                    [% END %]
+                                    [% IF ( CAN_user_superlibrarian ) %]
+                                        [% IF job.status == 'new' || job.status == 'cancelled' || job.status == 'error' || job.status == 'finished' %]
+                                            <a class="btn btn-default btn-xs" id="delete_job_[% job.id | html %]" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=remove"><i class="fa fa-trash"></i> Eliminar</a>
+                                        [% END %]
+                                    [% END %]
+                                </td>
+                            </tr>
+                            [% END %]
+                        </tbody>
+                    </table>
+    
+                    <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&amp;method=tool" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i> Recargar datos</a>
+                </div>
+            [% END %]
+    
+        [% ELSE %]
+            <div class="dialog alert">O plugin non está habilitado. Por favor, contact co administrador do sistema se o quere usar.</div>
+        [% END %]
+    [% END %]
+</div>
+
+<div class="page-loader">
+    <div class="lds-dual-ring"></div>
+</div>
+
+[% MACRO jsinclude BLOCK %]
+    [% INCLUDE 'datatables.inc' %]
+<script>
+    $(document).ready(function() {
+        $(".page-loader").hide();
+        
+        eTable = $('#jobs-table').dataTable( {
+            "columnDefs": [ {
+                "targets": 5,
+                "orderable": false
+            } ]
+        });
+
+        $("a[id^=delete_job_]").click(function(){
+            return confirmDelete(_("Está seguro de que desexa eliminar este traballo?"));
+        });
+        
+        $('#div-jobs-table').show();
+    });
+</script>
+[% END %]
+<!-- Footer-->
+[% INCLUDE 'intranet-bottom.inc' %]

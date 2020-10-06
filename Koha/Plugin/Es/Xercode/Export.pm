@@ -73,8 +73,15 @@ sub tool {
     my $cgi = $self->{'cgi'};
     
     my $userid = C4::Context->userenv ? C4::Context->userenv->{number} : undef;
-    
-    my $template = $self->get_template( { file => 'tool.tt' } );
+
+    my $template = undef;
+    my $locale = $cgi->cookie('KohaOpacLanguage');
+    eval {$template = $self->get_template( { file => "tool_" . $locale . ".tt" } )};
+    if(!$template) {
+        $locale = substr $locale, 0, 2;
+        eval {$template = $self->get_template( { file => "tool_$locale.tt" } )};
+    }
+    $template = $self->get_template( { file => 'tool.tt' } ) unless $template;
     
     if ( $self->retrieve_data('enabled') ) {
         $template->param(enabled => 1);
@@ -251,7 +258,15 @@ sub configure {
         $self->go_home();
     }
     else {
-        my $template = $self->get_template( { file => 'configure.tt' } );
+
+        my $template = undef;
+        my $locale = $cgi->cookie('KohaOpacLanguage');
+        eval {$template = $self->get_template( { file => "configure_" . $locale . ".tt" } )};
+        if(!$template) {
+            $locale = substr $locale, 0, 2;
+            eval {$template = $self->get_template( { file => "configure_$locale.tt" } )};
+        }
+        $template = $self->get_template( { file => 'configure.tt' } ) unless $template;
 
         $template->param(
             enabled               => $self->retrieve_data('enabled'),
@@ -375,7 +390,14 @@ sub createjob {
     my ($self, $args) = @_;
     my $cgi = $self->{'cgi'};
 
-    my $template = $self->get_template( { file => 'tool_new.tt' } );
+    my $template = undef;
+    my $locale = $cgi->cookie('KohaOpacLanguage');
+    eval {$template = $self->get_template( { file => "tool_new_" . $locale . ".tt" } )};
+    if(!$template) {
+        $locale = substr $locale, 0, 2;
+        eval {$template = $self->get_template( { file => "tool_new_$locale.tt" } )};
+    }
+    $template = $self->get_template( { file => 'tool_new.tt' } ) unless $template;
     
     if ( $self->retrieve_data('enabled') ) {
         $template->param(enabled => 1);

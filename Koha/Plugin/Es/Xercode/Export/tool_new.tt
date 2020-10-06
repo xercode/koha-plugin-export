@@ -26,7 +26,7 @@
     [% IF (configok) %]
         [% IF (enabled) %]
             [% UNLESS (error) %]
-                <div class="dialog alert">Export job created sucessfuly. <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% jobid | html %]&op=view">Click here to view this job</a> or <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">click here to view the complete list of export jobs</a>.</div>
+                <div class="dialog alert">Export job created successfully. <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% jobid | html %]&op=view">Click here to view this job</a> or <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">click here to view the complete list of export jobs</a>.</div>
             [% END %]
         [% ELSE %]
             <div class="dialog alert">The plugin is not yet enabled. Please contact with the administrator if you want to use it.</div>

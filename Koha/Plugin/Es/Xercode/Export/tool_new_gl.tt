@@ -1,0 +1,58 @@
+[% USE raw %]
+[% USE Asset %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+<title>Koha Export Plugin</title>
+
+[% INCLUDE 'doc-head-close.inc' %]
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/common.css'>
+<link rel='stylesheet' type='text/css' href='[%PLUGIN_PATH%]/css/jquery.dataTables.min.css'>
+
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Inicio</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl?method=tool">Plugins</a> &rsaquo; <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">Koha Export Plugin</a> &rsaquo; <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">Executar</a></div>
+
+<div id="doc3" class="tool">
+
+    [% IF (store_directory_notset) %]
+        <div class="dialog alert">O plugin aínda non está listo. Debe configurar o directorio de almacenamento para poder empregar o plugin.</div>
+    [% END %]
+    [% IF (store_directory_notwritable) %]
+        <div class="dialog alert">O plugin aínda non está listo. Debe ter os permisos correctos no directorio de almacenamento para poder empregar o plugin.</div>
+    [% END %]
+    
+    [% IF (configok) %]
+        [% IF (enabled) %]
+            [% UNLESS (error) %]
+                <div class="dialog alert">Traballo de exportación creado con éxito. <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% jobid | html %]&op=view">Faga click aquí para ver este traballo</a> ou <a href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool">faca click aquí para ver a lista completa de traballos de exportación</a>.</div>
+            [% END %]
+        [% ELSE %]
+            <div class="dialog alert">O plugin non está habilitado. Por favor, contact co administrador do sistema se o quere usar.</div>
+        [% END %]
+    [% END %]
+        
+</div>
+
+<div class="page-loader">
+    <div class="lds-dual-ring"></div>
+</div>
+
+[% MACRO jsinclude BLOCK %]
+    [% INCLUDE 'datatables.inc' %]
+<script>
+    $(document).ready(function() {
+        $(".page-loader").hide();
+        
+        eTable = $('#jobs-table').dataTable( {
+            "columnDefs": [ {
+                "targets": 4,
+                "orderable": false
+            } ]
+        });
+    });
+</script>
+[% END %]
+<!-- Footer-->
+[% INCLUDE 'intranet-bottom.inc' %]

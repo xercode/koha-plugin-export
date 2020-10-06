@@ -15,10 +15,10 @@
 <body>
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Koha Export Plugin &rsaquo; Configuration</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Inicio</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Koha Export Plugin &rsaquo; Configuración</div>
 
 <div id="doc3">
-    <h3><i class="fa fa-list-alt"></i> Koha Export Plugin configuration</h3>
+    <h3><i class="fa fa-list-alt"></i> Configuración do Koha Export Plugin</h3>
     
     <div id="general">
         <form id="configureForm" method="get">
@@ -26,31 +26,31 @@
             <input type="hidden" name="method" value="[% METHOD %]"/>
 
             <fieldset class="rows">
-                <legend>Options</legend>
+                <legend>Opcións</legend>
                 <ol>
                     <li>
-                        <label for="service_url">Enable plugin: </label>
-                        <input type="checkbox" id="enabled" name="enabled" [% IF (enabled) %]checked="checked"[% END %] value="1"> Enable this plugin </input>
+                        <label for="service_url">Habilitar plugin: </label>
+                        <input type="checkbox" id="enabled" name="enabled" [% IF (enabled) %]checked="checked"[% END %] value="1"> Habilita este plugin </input>
                     </li>
                     <li>
-                        <label for="store_directory">Store directory: </label>
+                        <label for="store_directory">Directorio de almacenamento: </label>
                         <input type="text" id="store_directory" name="store_directory" size="60" value="[% store_directory %]" />
                     </li>
                     <li>
-                        <label for="clean_chars">Replace these characters from the records: </label>
-                        <p class="tip">Write the character you wish to replace and the character you wish to replace with separated by -  Example: À-A You must put every character replacement in a different line.</p>
+                        <label for="clean_chars">Substituír estes caracteres dos rexistros: </label>
+                        <p class="tip">Escribe o caracter que desexas substituir e o caracter co que o desexas subtituir separados por - Exemplo: À-A Debes escribir cada substitución nunha liña diferente.</p>
                         <textarea id="clean_chars" name="clean_chars" cols="50" rows="5">[% clean_chars %]</textarea>
                     </li>
                 </ol>
             </fieldset>
 
-            [% IF error %]<div class="warn alert error">Error: [% error %]</div>[% END %]
+            [% IF error %]<div class="warn alert error">Erro: [% error %]</div>[% END %]
 
             <input type="hidden" name="save" value="options" />
 
             <fieldset class="action">
-                <button id="cancel" class="btn"><i class="fa fa-times"></i> Cancel</button>
-                <button id="save_out" class="btn"><i class="fa fa-save"></i> Save</button>
+                <button id="cancel" class="btn"><i class="fa fa-times"></i> Cancelar</button>
+                <button id="save_out" class="btn"><i class="fa fa-save"></i> Gardar</button>
             </fieldset>
         </form>
     </div>
