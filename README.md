@@ -26,6 +26,8 @@ Go to System preferences, and add this code to IntranetUserJS
 
 
 ```
+In English
+
 // Koha Plugin Export
 if ($('body#tools_export').length){
     $.get( "/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=status", function( response ) {
@@ -97,7 +99,83 @@ if ($('body#tools_export').length){
         }
     });
 }
+
 ```
+En galego:
+
+// Koha Plugin Export
+if ($('body#tools_export').length){
+    $.get( "/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=status", function( response ) {
+        if (response.status){
+            $('body#tools_export div#bibs form').each(
+                function(){
+
+                    $(this).append("<h3>Campos específicos do Koha plugin export</h3><fieldset class='rows'>    <legend>Datas de creación ou modificación do bibliográfico (inclusive)</legend>    <ol>        <li>            <label for='filter-creation' class='radiocontainer'> Creados en                <input type='radio' name='datecreatedmodified' id='filter-creation' value='datecreated' checked='checked'>            </label>            <label for='filter-modification' class='radiocontainer'> Modificados en                <input type='radio' name='datecreatedmodified' id='filter-modification' value='datemodified'>            </label>        </li>        <li>                <label for='start_datecreatedmodified'>Data de inicio:</label>                <input type='text' size='10' id='start_datecreatedmodified' name='start_datecreatedmodified' value='' class='start_datecreatedmodified' />        </li>        <li>            <label for='end_datecreatedmodified'>Data final:</label>            <input size='10' id='end_datecreatedmodified' name='end_datecreatedmodified' value='' type='text' class='end_datecreatedmodified' />        </li>    </ol></fieldset><fieldset class='rows'>    <legend>Rexistros ocultos</legend>    <ol>        <li>            <label for='excludesuppressedbiblios'>Non incluir os rexitros ocultos:</label>            <input id='excludesuppressedbiblios' type='checkbox' name='excludesuppressedbiblios' value='1' checked='checked' />        </li>    </ol></fieldset>");
+
+                    $(this).validate({
+                        rules: {
+                            mailto: {
+                                email: true
+                            }
+                        },
+                        submitHandler: function(form) {
+                            form.submit();
+                        }
+                    });
+
+
+                    // New dates
+                    setTimeout(function(){
+                        var dates = $( ".start_datecreatedmodified, .end_datecreatedmodified" ).datepicker({
+                            changeMonth: true,
+                            numberOfMonths: 1,
+                            onSelect: function( selectedDate ) {
+                                var option = $( this ).hasClass("start_datecreatedmodified") ? "minDate" : "maxDate",
+                                    instance = $( this ).data( "datepicker" );
+                                    date = $.datepicker.parseDate(
+                                        instance.settings.dateFormat ||
+                                        $.datepicker._defaults.dateFormat,
+                                        selectedDate, instance.settings );
+                                dates.not( this ).datepicker( "option", option, date );
+                            },
+                            onClose: function(dateText, inst) {
+                                validate_date(dateText, inst);
+                            },
+                        }).on("change", function(e, value) {
+                            if ( ! is_valid_date( $(this).val() ) ) {$(this).val("");}
+                        });
+
+                    }, 3000);
+
+                }
+            );
+
+            $('body#tools_export div#exporttype form').each(
+                function(){ 
+                    $(this).attr('action', '/cgi-bin/koha/plugins/run.pl');
+                    $(this).append("<input type='hidden' name='class' value='Koha::Plugin::Es::Xercode::Export'/>");
+                    $(this).append("<input type='hidden' name='method' value='createjob'/>");
+                    $(this).append("<li><label for='mailto'>e emprega esta correo electrónico para o informe: </label><input id='mailto' type='text' name='mailto' size='30'/></li>");
+
+                    $(this).validate({
+                        rules: {
+                            mailto: {
+                                email: true
+                            }
+                        },
+                        submitHandler: function(form) {
+                            form.submit();
+                        }
+                    });
+                }
+            );
+        }else{
+            $('#exporttype').before('<div class="dialog alert">Koha Plugin Export está instalado, pero aínda non se pode usar. Por favor, contacte co seu administrador de sistemas para que revise o plugin.</div>');
+        }
+    });
+}
+
+...
 
 Create a new letter to send notices:
 

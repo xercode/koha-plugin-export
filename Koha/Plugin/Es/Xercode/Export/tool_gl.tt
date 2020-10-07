@@ -77,7 +77,7 @@
                             <li><label for="job_end_callnumber">Sinatura topográfica ata: </label>[% IF (job.end_callnumber) %][% job.end_callnumber | html %][% ELSE %]Todas[% END %]</li>
                             <li><label for="job_dont_export_item">Non exportar items: </label>[% IF (job.dont_export_item) %]Si[% ELSE %]Non[% END %]</li>
                             <li><label for="job_strip_items_not_from_libraries">Eliminar items que non pertenecen as bibliotecas seleccionadas: </label>[% IF (job.strip_items_not_from_libraries) %]Si[% ELSE %]Non[% END %]</li>
-                            <li><label for="job_export_remove_fields">Non exporte campos: </label>[% IF (job.export_remove_fields) %]Si[% ELSE %]Non[% END %]</li>
+                            <li><label for="job_export_remove_fields">Non exporte campos: </label>[% IF (job.export_remove_fields) %][% job.export_remove_fields %][% ELSE %]Non[% END %]</li>
                         [% ELSE %]
                             <li><label for="job_authtype">Tipo de autoridade: </label>[% job.authtype | html %]</li>
                         [% END %]
@@ -162,10 +162,10 @@
                                     <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=view"><i class="fa fa-eye"></i> Ver</a>
                                     [% IF ( CAN_user_superlibrarian || (logged_in_user.borrowernumber == job.borrowernumber) ) %]
                                         [% IF job.status == 'new' %]
-                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=cancel"><i class="fa fa-pencil"></i> Cancelar</a>
+                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=cancel"><i class="fa fa-times"></i> Cancelar</a>
                                         [% END %]
                                         [% IF job.status == 'cancelled' %]
-                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=resume"><i class="fa fa-pencil"></i> Reanudar</a>
+                                            <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=resume"><i class="fa fa-play"></i> Reanudar</a>
                                         [% END %]
                                         [% IF job.status == 'finished' %]
                                             <a class="btn btn-default btn-xs" href="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool&id=[% job.id | html %]&op=download"><i class="fa fa-download"></i> Descargar</a>
