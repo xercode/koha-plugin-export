@@ -41,7 +41,7 @@ BEGIN {
     my $pluginsdir  = C4::Context->config('pluginsdir');
 }
 
-our $VERSION = "1.0.0";
+our $VERSION = "1.0.8";
 
 our $metadata = {
     name            => 'Koha Plugin Export',
@@ -75,7 +75,7 @@ sub tool {
     my $userid = C4::Context->userenv ? C4::Context->userenv->{number} : undef;
 
     my $template = undef;
-    my $locale = $cgi->cookie('KohaOpacLanguage');
+    my $locale = C4::Languages::getlanguage();
     eval {$template = $self->get_template( { file => "tool_" . $locale . ".tt" } )};
     if(!$template) {
         $locale = substr $locale, 0, 2;
@@ -260,7 +260,7 @@ sub configure {
     else {
 
         my $template = undef;
-        my $locale = $cgi->cookie('KohaOpacLanguage');
+        my $locale = C4::Languages::getlanguage();
         eval {$template = $self->get_template( { file => "configure_" . $locale . ".tt" } )};
         if(!$template) {
             $locale = substr $locale, 0, 2;
@@ -391,7 +391,7 @@ sub createjob {
     my $cgi = $self->{'cgi'};
 
     my $template = undef;
-    my $locale = $cgi->cookie('KohaOpacLanguage');
+    my $locale = C4::Languages::getlanguage();
     eval {$template = $self->get_template( { file => "tool_new_" . $locale . ".tt" } )};
     if(!$template) {
         $locale = substr $locale, 0, 2;
