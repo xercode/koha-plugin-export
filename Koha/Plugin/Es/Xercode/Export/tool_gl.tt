@@ -207,7 +207,10 @@
             "columnDefs": [ {
                 "targets": 5,
                 "orderable": false
-            } ]
+            } ],
+            "language": {
+              "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Galician.json"
+            }
         });
 
         $("a[id^=delete_job_]").click(function(){
