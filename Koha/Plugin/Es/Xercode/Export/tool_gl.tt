@@ -65,8 +65,8 @@
                         <li><label for="job_starting_id">Desde ID: </label>[% IF (job.starting_id) %][% job.starting_id | html %][% ELSE %]-[% END %]</li>
                         <li><label for="job_ending_id">Ata ID: </label>[% IF (job.ending_id) %][% job.ending_id | html %][% ELSE %]-[% END %]</li>
                         [% IF (job.record_type == 'bibs') %]
-                            <li><label for="job_branch">Con items pertencentes ás seguintes bibliotecas: </label>[% IF (job.branch) %][% job.branch | html %][% ELSE %]All[% END %]</li>
-                            <li><label for="job_itemtype">Tipo de item: </label>[% IF (job.itemtype) %][% job.itemtype | html %][% ELSE %]All[% END %]</li>
+                            <li><label for="job_branch">Con items pertencentes ás seguintes bibliotecas: </label>[% IF (job.branch) %][% job.branch | html %][% ELSE %]Todas[% END %]</li>
+                            <li><label for="job_itemtype">Tipo de item: </label>[% IF (job.itemtype) %][% job.itemtype | html %][% ELSE %]Todos[% END %]</li>
                             <li><label for="job_start_datecreated">Bibliográficos creados desde: </label>[% IF (job.start_datecreated) %][% job.start_datecreated | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
                             <li><label for="job_end_datecreated">Bibliográficos creados ata: </label>[% IF (job.end_datecreated) %][% job.end_datecreated | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
                             <li><label for="job_start_datemodified">Bibliográficos modificados desde: </label>[% IF (job.start_datemodified) %][% job.start_datemodified | $KohaDates %][% ELSE %]Non establecida[% END %]</li>
