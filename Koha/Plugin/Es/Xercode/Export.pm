@@ -41,7 +41,7 @@ BEGIN {
     my $pluginsdir  = C4::Context->config('pluginsdir');
 }
 
-our $VERSION = "1.0.8";
+our $VERSION = "1.0.9";
 
 our $metadata = {
     name            => 'Koha Plugin Export',
@@ -727,7 +727,7 @@ sub cronjob {
                     $dbh->do("UPDATE $table_jobs SET systemfilename = ? WHERE id = ?", undef, ($systemfilename . ".zip", $row->{"id"}));
                     $dbh->do("UPDATE $table_jobs SET systemfilename_codification = ? WHERE id = ?", undef, ($systemfilename_codification , $row->{"id"}));
                 }else{
-                    $dbh->do("UPDATE $table_jobs SET status = ?, information = ?, ended_on = ? WHERE id = ?", undef, ('error', 'No data to export', dt_from_string, $row->{"id"}));
+                    $dbh->do("UPDATE $table_jobs SET status = ?, information = ?, ended_on = ? WHERE id = ?", undef, ('error', 'Sen datos para exportar', dt_from_string, $row->{"id"}));
                 }
 
                 if ($row->{"mailto"}){

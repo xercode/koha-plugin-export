@@ -78,6 +78,7 @@
                             <li><label for="job_dont_export_item">Don't export items: </label>[% IF (job.dont_export_item) %]Yes[% ELSE %]No[% END %]</li>
                             <li><label for="job_strip_items_not_from_libraries">Remove items not owned by selected libraries: </label>[% IF (job.strip_items_not_from_libraries) %]Yes[% ELSE %]No[% END %]</li>
                             <li><label for="job_export_remove_fields">Don't export fields: </label>[% IF (job.export_remove_fields) %][% job.export_remove_fields %][% ELSE %]No[% END %]</li>
+                            <li><label for="job_excludesuppressedbiblios">Exclude suppressed biblios: </label>[% IF (job.excludesuppressedbiblios) %]Yes[% ELSE %]No[% END %]</li>
                         [% ELSE %]
                             <li><label for="job_authtype">Auth type: </label>[% job.authtype | html %]</li>
                         [% END %]
@@ -205,9 +206,10 @@
         
         eTable = $('#jobs-table').dataTable( {
             "columnDefs": [ {
-                "targets": 5,
+                "targets": [5,6],
                 "orderable": false
-            } ]
+            } ],
+            "order": [[ 1, "desc" ]]
         });
 
         $("a[id^=delete_job_]").click(function(){
