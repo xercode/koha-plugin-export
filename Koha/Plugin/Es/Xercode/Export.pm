@@ -159,9 +159,6 @@ sub tool {
                         if (-e $store_directory.$row->{"systemfilename"}){
                             unlink $store_directory.$row->{"systemfilename"};
                         }
-                        if (-e $store_directory.$row->{"systemfilename_codification"}){
-                            unlink $store_directory.$row->{"systemfilename_codification"};
-                        }
                         my $sth = $dbh->prepare("DELETE FROM $table_jobs WHERE ID = ?");
 
                         $dbh->do(
@@ -196,23 +193,8 @@ sub tool {
                     );
                     print $content;
                     exit;
-                }
-            }
-            if ($op eq "download_report"){
-                $store_directory .= "/" unless ($store_directory =~ /\/$/);
-                if (-e $store_directory.$row->{"systemfilename_codification"}){
-                    my $type = 'file/csv';
-                    my $file_fh;
-                    my $content;
-                    binmode(STDOUT);
-                    open $file_fh, '<', $store_directory.$row->{"systemfilename_codification"};
-                    $content .= $_ while <$file_fh>;
-                    print $cgi->header(
-                        -type => $type,
-                        -attachment=> $row->{"systemfilename_codification"}
-                    );
-                    print $content;
-                    exit;
+                }else{
+                    print $cgi->redirect("/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AEs%3A%3AXercode%3A%3AExport&method=tool");
                 }
             }
         }else{
@@ -252,7 +234,6 @@ sub configure {
             {
                 enabled         => $enabled,
                 store_directory => $cgi->param('store_directory'),
-                clean_chars     => $cgi->param('clean_chars'),
             }
         );
         $self->go_home();
@@ -271,7 +252,6 @@ sub configure {
         $template->param(
             enabled               => $self->retrieve_data('enabled'),
             store_directory       => $self->retrieve_data('store_directory'),
-            clean_chars           => $self->retrieve_data('clean_chars'),
         );
         
         print $cgi->header(
@@ -330,12 +310,10 @@ sub install() {
               `export_remove_fields` TEXT,
               `dont_export_item` tinyint(1),
               `strip_items_not_from_libraries` tinyint(1),
-              `excludesuppressedbiblios` tinyint(1),
               `output_format` varchar(20) NOT NULL,
               `csv_profile_id` int(11) NULL,
 			  `filename` varchar(50),
 			  `systemfilename` varchar(50),
-              `systemfilename_codification` varchar(100),
 			  `status` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			  `information` text DEFAULT NULL,
               `enqueued_on` datetime DEFAULT NULL,
@@ -448,7 +426,10 @@ sub createjob {
         # Mail
         my $mailto = $cgi->param("mailto");
         if ($mailto eq ""){
-            $mailto = C4::Members::GetNoticeEmailAddress($userid);
+            if ($userid){
+                my $patron = Koha::Patrons->find( $userid );
+                $mailto = $patron->first_valid_email_address();
+            }
         }
 
         # Upload dir
@@ -507,9 +488,9 @@ sub createjob {
 
         $dbh->do(
             qq{
-            INSERT INTO $table_jobs (`borrowernumber`, `record_type`, `authtype`, `branch`, `itemtype`, `start_datecreated`, `end_datecreated`, `start_datemodified`, `end_datemodified`, `start_accession`, `end_accession`, `start_callnumber`, `end_callnumber`, `id_list_file`, `starting_id`, `ending_id`, `export_remove_fields`, `dont_export_item`, `strip_items_not_from_libraries`, `excludesuppressedbiblios`, `output_format`, `csv_profile_id`, `filename`, `status`, `enqueued_on`, `mailto` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+            INSERT INTO $table_jobs (`borrowernumber`, `record_type`, `authtype`, `branch`, `itemtype`, `start_datecreated`, `end_datecreated`, `start_datemodified`, `end_datemodified`, `start_accession`, `end_accession`, `start_callnumber`, `end_callnumber`, `id_list_file`, `starting_id`, `ending_id`, `export_remove_fields`, `dont_export_item`, `strip_items_not_from_libraries`, `output_format`, `csv_profile_id`, `filename`, `status`, `enqueued_on`, `mailto` ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
            }
-            , undef, ( $userid, $cgi->param("record_type"), $cgi->param("authtype") || '', $branches || '', $cgi->param("itemtype") || '', $start_datecreated, $end_datecreated, $start_datemodified, $end_datemodified,  ( $cgi->param("start_accession") ) ? dt_from_string( scalar $cgi->param("start_accession") ) : undef,  ( $cgi->param("end_accession") ) ? dt_from_string( scalar $cgi->param("end_accession") ) : undef,  $cgi->param("start_callnumber") || '',  $cgi->param("end_callnumber") || '', $id_list_file,  $starting_id,  $ending_id,  $cgi->param("export_remove_fields") || '',  ($cgi->param("dont_export_item") && $cgi->param("dont_export_item") eq "on")?1:0,  ($cgi->param("strip_items_not_from_libraries") && $cgi->param("strip_items_not_from_libraries") eq "on") ? 1 : 0, ($cgi->param("excludesuppressedbiblios"))?1:0,  $output_format,  $cgi->param("csv_profile_id") || 0,  $cgi->param("filename"), "new", dt_from_string, $mailto )
+            , undef, ( $userid, $cgi->param("record_type"), $cgi->param("authtype") || '', $branches || '', $cgi->param("itemtype") || '', $start_datecreated, $end_datecreated, $start_datemodified, $end_datemodified,  ( $cgi->param("start_accession") ) ? dt_from_string( scalar $cgi->param("start_accession") ) : undef,  ( $cgi->param("end_accession") ) ? dt_from_string( scalar $cgi->param("end_accession") ) : undef,  $cgi->param("start_callnumber") || '',  $cgi->param("end_callnumber") || '', $id_list_file,  $starting_id,  $ending_id,  $cgi->param("export_remove_fields") || '',  ($cgi->param("dont_export_item") && $cgi->param("dont_export_item") eq "on")?1:0,  ($cgi->param("strip_items_not_from_libraries") && $cgi->param("strip_items_not_from_libraries") eq "on") ? 1 : 0, $output_format,  $cgi->param("csv_profile_id") || 0,  ($cgi->param("filename"))?$cgi->param("filename"):$cgi->param("filename_auth"), "new", dt_from_string, $mailto )
         );
 
         my $job_id = $dbh->last_insert_id(undef, undef, $table_jobs, undef);
@@ -545,12 +526,6 @@ sub cronjob {
     my $table_jobs = $self->get_qualified_table_name('jobs');
     my $store_directory = $self->retrieve_data('store_directory');
     $store_directory .= "/" unless ($store_directory =~ /\/$/);
-
-    my @clean_chars;
-    if ($self->retrieve_data('clean_chars')){
-        @clean_chars = split ("\r\n", $self->retrieve_data('clean_chars'));
-    }
-    
     
     if ( not -w $store_directory) {
         print "ERROR: The directory $store_directory not writeable.\n";
@@ -694,9 +669,7 @@ sub cronjob {
                 if (@record_ids && scalar(@record_ids)){
                     # Do the export job
                     $dbh->do("UPDATE $table_jobs SET status = ? WHERE id = ?", undef, ('inprogress', $row->{"id"}));
-
-                    my $systemfilename_codification = "export-".$row->{id}."_".$today_iso."_".time().'_codification_changed.csv';
-
+                    
                     Koha::Exporter::Record::export(
                         { record_type                      => $row->{"record_type"},
                             record_ids                     => \@record_ids,
@@ -706,9 +679,6 @@ sub cronjob {
                             export_items                   => (not $row->{"dont_export_item"}),
                             only_export_items_for_branches => $only_export_items_for_branches,
                             output_filepath                => $store_directory . $systemfilename,
-                            clean_chars                    => \@clean_chars,
-                            exclude_suppressed_biblios     => $row->{"excludesuppressedbiblios"},
-                            output_filepath_codification   => $store_directory . $systemfilename_codification,
                         }
                     );
 
@@ -725,9 +695,8 @@ sub cronjob {
                     # Finish
                     $dbh->do("UPDATE $table_jobs SET status = ?, ended_on = ? WHERE id = ?", undef, ('finished', dt_from_string, $row->{"id"}));
                     $dbh->do("UPDATE $table_jobs SET systemfilename = ? WHERE id = ?", undef, ($systemfilename . ".zip", $row->{"id"}));
-                    $dbh->do("UPDATE $table_jobs SET systemfilename_codification = ? WHERE id = ?", undef, ($systemfilename_codification , $row->{"id"}));
                 }else{
-                    $dbh->do("UPDATE $table_jobs SET status = ?, information = ?, ended_on = ? WHERE id = ?", undef, ('error', 'Sen datos para exportar', dt_from_string, $row->{"id"}));
+                    $dbh->do("UPDATE $table_jobs SET status = ?, information = ?, ended_on = ? WHERE id = ?", undef, ('error', 'There are no data to export', dt_from_string, $row->{"id"}));
                 }
 
                 if ($row->{"mailto"}){

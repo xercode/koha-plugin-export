@@ -36,11 +36,6 @@
                         <label for="store_directory">Directorio de almacenamento: </label>
                         <input type="text" id="store_directory" name="store_directory" size="60" value="[% store_directory %]" />
                     </li>
-                    <li>
-                        <label for="clean_chars">Substituír estes caracteres dos rexistros: </label>
-                        <p class="tip">Escribe o caracter que desexas substituir e o caracter co que o desexas subtituir separados por - Exemplo: À-A Debes escribir cada substitución nunha liña diferente.</p>
-                        <textarea id="clean_chars" name="clean_chars" cols="50" rows="5">[% clean_chars %]</textarea>
-                    </li>
                 </ol>
             </fieldset>
 

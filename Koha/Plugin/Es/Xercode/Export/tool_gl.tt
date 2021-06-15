@@ -78,7 +78,6 @@
                             <li><label for="job_dont_export_item">Non exportar items: </label>[% IF (job.dont_export_item) %]Si[% ELSE %]Non[% END %]</li>
                             <li><label for="job_strip_items_not_from_libraries">Eliminar items que non pertenecen as bibliotecas seleccionadas: </label>[% IF (job.strip_items_not_from_libraries) %]Si[% ELSE %]Non[% END %]</li>
                             <li><label for="job_export_remove_fields">Non exporte campos: </label>[% IF (job.export_remove_fields) %][% job.export_remove_fields %][% ELSE %]Non[% END %]</li>
-                            <li><label for="job_excludesuppressedbiblios">Excluir rexistros ocultos: </label>[% IF (job.excludesuppressedbiblios) %]Si[% ELSE %]Non[% END %]</li>
                         [% ELSE %]
                             <li><label for="job_authtype">Tipo de autoridade: </label>[% job.authtype | html %]</li>
                         [% END %]
