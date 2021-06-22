@@ -116,7 +116,6 @@ perl [your_plugin_dir]/Koha/Plugin/Es/Xercode/Export/cronjob.pl
 In the configuration page, you can:
 - Enable the plugin
 - Establish the directory to store the exported data.
-- Set characters to remove from the records.
 
 # Documentation
 
